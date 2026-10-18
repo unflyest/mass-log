@@ -491,9 +491,9 @@ function sparkle(){
     var par=el.parentNode,w=par.offsetWidth,h=par.offsetHeight;if(!w||!h)return;
     var L=3*w*Math.abs(Math.sin(th))+3*h*Math.abs(cs),y=h/2+2*h*gv.hy/100,best=null;
     [.17,.5,.83].forEach(function(t){var x=1.5*w+((t-.5)*L+(y-1.5*h)*cs)/sn,ex=x-2*w*gv.hx/100,pr=clamp(Math.min(ex,w-ex)/(.22*w),0,1);if(!best||pr>best.pr)best={ex:ex,pr:pr}});
-    var k=.45+1.15*gv.mag;
+    var k=.225+.575*gv.mag;
     el.style.left=best.ex+"px";el.style.top=(h/2)+"px";
-    el.style.opacity=(best.pr*(.45+.55*gv.mag)).toFixed(3);
+    el.style.opacity=(best.pr*(.225+.275*gv.mag)).toFixed(3);
     el.style.transform="translate(-50%,-50%) scale("+(k*(.6+.4*best.pr)).toFixed(3)+") rotate("+((gv.ha-115)*.25).toFixed(1)+"deg)"})}
 function queueSparkle(){if(!spkRaf){spkRaf=true;requestAnimationFrame(sparkle)}}
 function render(){
