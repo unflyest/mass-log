@@ -52,6 +52,11 @@ header.top{display:flex;justify-content:space-between;align-items:center;gap:12p
 .tiltbtn{cursor:pointer;min-height:32px}
 .sub{color:var(--muted)}
 h2{font:700 28px/1.1 var(--f);letter-spacing:-.03em;margin:0;text-wrap:balance}
+.brand,h2{--foil-base:#14171F;--foil-mid:#3C4250;--foil-hi:#B4BBC8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .brand,:root:not([data-theme="light"]) h2{--foil-base:#CDD2DC;--foil-mid:#9AA1AF;--foil-hi:#FFFFFF}}
+:root[data-theme="dark"] .brand,:root[data-theme="dark"] h2{--foil-base:#CDD2DC;--foil-mid:#9AA1AF;--foil-hi:#FFFFFF}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+.brand,h2{color:transparent;-webkit-text-fill-color:transparent;background-image:linear-gradient(115deg,var(--foil-base) 0%,var(--foil-base) 36%,var(--foil-mid) 44%,var(--foil-hi) 50%,var(--foil-mid) 56%,var(--foil-base) 64%,var(--foil-base) 100%);background-size:300% 300%;background-position:var(--hx,30%) var(--hy,30%);-webkit-background-clip:text;background-clip:text;padding-bottom:.12em}}
 h3{font:600 17px/1.25 var(--f);letter-spacing:-.015em;margin:0;text-wrap:balance}
 .label{font:600 11px var(--f);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 p{margin:0}
