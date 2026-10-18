@@ -72,11 +72,11 @@ p{margin:0}
 .card.hero::before{background-image:linear-gradient(var(--ha,115deg),rgba(255,255,255,0) 38%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 62%),linear-gradient(var(--ha,115deg),rgba(228,170,150,.17) 0%,rgba(225,200,140,.18) 20%,rgba(150,200,170,.17) 40%,rgba(140,185,215,.18) 60%,rgba(130,195,195,.17) 80%,rgba(228,170,150,.17) 100%);background-size:300% 300%,250% 250%}
 @property --fo{syntax:"<length>";inherits:false;initial-value:0px}
 @keyframes flow{to{--fo:240px}}
-.card{--ra:.3}
-.card.hero{--ra:.5}
-.card::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background-image:repeating-linear-gradient(var(--ha,115deg),rgba(228,170,150,var(--ra)) calc(var(--fo) + 0px),rgba(225,200,140,var(--ra)) calc(var(--fo) + 48px),rgba(150,200,170,var(--ra)) calc(var(--fo) + 96px),rgba(140,185,215,var(--ra)) calc(var(--fo) + 144px),rgba(130,195,195,var(--ra)) calc(var(--fo) + 192px),rgba(228,170,150,var(--ra)) calc(var(--fo) + 240px));animation:flow 13s linear infinite}
+.card{--ra:.12}
+.card.hero{--ra:.22}
+.card::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background-image:repeating-linear-gradient(var(--ha,115deg),rgba(228,170,150,var(--ra)) calc(var(--fo) + 0px),rgba(225,200,140,var(--ra)) calc(var(--fo) + 48px),rgba(150,200,170,var(--ra)) calc(var(--fo) + 96px),rgba(140,185,215,var(--ra)) calc(var(--fo) + 144px),rgba(130,195,195,var(--ra)) calc(var(--fo) + 192px),rgba(228,170,150,var(--ra)) calc(var(--fo) + 240px));animation:flow 6s linear infinite}
 .card::after{inset:-90px;border-radius:0;-webkit-filter:url(#flow);filter:url(#flow)}
-.card.hero::after{inset:-110px;animation-duration:8s}
+.card.hero::after{inset:-110px;animation-duration:4s}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .card::after{opacity:.7}}
 :root[data-theme="dark"] .card::after{opacity:.7}
 @media (prefers-reduced-motion:reduce){.card::after{animation:none;-webkit-filter:none;filter:none}.card.hero::after{-webkit-filter:none;filter:none}}
@@ -151,7 +151,7 @@ details summary{cursor:pointer;font:600 16px var(--f);min-height:36px;display:fl
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="flow" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.011 0.016" numOctaves="5" seed="7" result="n"><animate attributeName="baseFrequency" dur="14s" repeatCount="indefinite" values="0.011 0.016;0.016 0.011;0.011 0.016"/></feTurbulence><feComponentTransfer in="n" result="m"><feFuncR type="table" tableValues="0 0.08 0.92 1"/><feFuncG type="table" tableValues="0 0.08 0.92 1"/></feComponentTransfer><feDisplacementMap in="SourceGraphic" in2="m" scale="140" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="0.7"/></filter></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="flow" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.011 0.016" numOctaves="5" seed="7" result="n"><animate attributeName="baseFrequency" dur="7s" repeatCount="indefinite" values="0.011 0.016;0.016 0.011;0.011 0.016"/></feTurbulence><feComponentTransfer in="n" result="m"><feFuncR type="table" tableValues="0 0.08 0.92 1"/><feFuncG type="table" tableValues="0 0.08 0.92 1"/></feComponentTransfer><feDisplacementMap in="SourceGraphic" in2="m" scale="85" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="0.7"/></filter></svg>
 <div class="wrap">
   <header class="top"><div class="brand">Mog Log</div><div class="row" style="flex-wrap:nowrap"><div class="sub" id="sub"></div></div></header>
   <main id="app"></main>
