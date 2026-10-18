@@ -466,6 +466,8 @@ function viewPlan(){
    '<li><b>Protein 1.6 to 2.2 g per kg</b> over 4 to 5 meals. Hit calories every day, rest days included.</li>'+
    '<li><b>Sleep 7 to 9 hours.</b> It limits muscle gain as much as food does.</li>'+
    '<li><b>Six days is a lot for a beginner.</b> If joints ache or lifts stall for two weeks, deload or drop to five days and keep the same food.</li></ul></section>';
+  var ts=tiltState();
+  h+='<section class="card"><h3>Tilt shine</h3><p class="note">'+(ts==="on"?"Tilt is on. Move your phone and the card sheen and header foil follow it.":ts==="denied"?"Motion access was denied. To retry, clear this site\'s data in Settings > Safari > Advanced > Website Data, then reopen the page and tap Allow.":ts==="none"?"This device has no motion sensor, so the sheen follows scrolling and touch instead.":"Turn on motion access so the sheen and header foil follow your phone.")+'</p>'+(ts==="ask"?'<button class="btn small" type="button" data-act="tilt">Turn on tilt</button>':'')+'</section>';
   h+='<section class="card"><h3>Backup</h3><p class="note">Your data is saved on this device and, when your account allows, in your own private store. To keep a copy, copy the text below somewhere safe. To restore, paste it and press Restore.</p>'+
    '<textarea id="bk" rows="3" aria-label="Backup text"></textarea><div class="row"><button class="btn ghost small" type="button" data-act="bkcopy">Copy backup</button><button class="btn ghost small" type="button" data-act="bkrestore">Restore</button></div><p class="note" id="bkmsg"></p></section>';
   return h;
@@ -515,6 +517,7 @@ app.addEventListener("click",function(e){
   else if(a==="savesettings"){
     var n2=function(id,def){var v2=num(document.getElementById(id).value);return v2>0?v2:def};
     S.kcal=n2("s_kcal",S.kcal);S.p=n2("s_p",S.p);S.c=n2("s_c",S.c);S.f=n2("s_f",S.f);S.rest=n2("s_rest",S.rest);S.lo=n2("s_lo",S.lo);S.hi=Math.max(S.hi,S.lo+2);persist();render()}
+  else if(a==="tilt"){askTilt()}
   else if(a==="bkcopy"){
     var ta=document.getElementById("bk"),msg=document.getElementById("bkmsg");ta.value=JSON.stringify(state);ta.select();
     var fin=function(ok){msg.textContent=ok?"Copied. Paste it into Notes or a message to yourself.":"Select the text above and copy it manually."};
@@ -534,9 +537,13 @@ function onTilt(e){
   st.setProperty("--hx",(50+g/45*50)+"%");st.setProperty("--hy",(50+bt/45*50)+"%");
   st.setProperty("--ry",(g/45*9).toFixed(2)+"deg");st.setProperty("--rx",(-bt/45*6).toFixed(2)+"deg")}
 function startTilt(){if(tiltOn)return;tiltOn=true;window.addEventListener("deviceorientation",onTilt)}
+var tiltAsk=false;
+function tiltState(){var D=window.DeviceOrientationEvent;return !D?"none":tiltOn?"on":tiltAsk==="denied"?"denied":typeof D.requestPermission==="function"?"ask":"on"}
 function askTilt(){
-  var D=window.DeviceOrientationEvent;if(!D)return;
-  if(typeof D.requestPermission==="function"){D.requestPermission().then(function(r){if(r==="granted")startTilt()}).catch(function(){})}
+  var D=window.DeviceOrientationEvent;if(!D||tiltAsk==="pending")return;
+  if(typeof D.requestPermission==="function"){
+    tiltAsk="pending";
+    D.requestPermission().then(function(r){tiltAsk=r==="granted"?"granted":"denied";if(r==="granted")startTilt();if(ui.tab==="plan")render()}).catch(function(){tiltAsk="denied";if(ui.tab==="plan")render()})}
   else startTilt()}
 if(!reduce){
   var raf=false;
