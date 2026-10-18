@@ -48,8 +48,7 @@ body{background-color:var(--bg);background-image:var(--wash);background-attachme
 #app{display:flex;flex-direction:column;gap:14px}
 header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:6px}
 .brand{font:700 30px/1 var(--f);letter-spacing:-.03em;color:var(--ink)}
-.tiltbtn,.sub{font:600 12px var(--f);color:var(--ink);background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);border-radius:999px;padding:5px 12px}
-.tiltbtn{cursor:pointer;min-height:32px}
+.sub{font:600 12px var(--f);color:var(--ink);background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);border-radius:999px;padding:5px 12px}
 .sub{color:var(--muted)}
 h2{font:700 28px/1.1 var(--f);letter-spacing:-.03em;margin:0;text-wrap:balance}
 .brand,h2{--foil-base:#0E1016;--foil-mid:#454B5A;--foil-lo:#A9B0BE;--foil-hi:#F7F8FB}
@@ -136,7 +135,7 @@ details summary{cursor:pointer;font:600 16px var(--f);min-height:36px;display:fl
 </head>
 <body>
 <div class="wrap">
-  <header class="top"><div class="brand">Mass Log</div><div class="row" style="flex-wrap:nowrap"><button class="tiltbtn" id="tiltbtn" type="button" hidden>Enable tilt</button><div class="sub" id="sub"></div></div></header>
+  <header class="top"><div class="brand">Mass Log</div><div class="row" style="flex-wrap:nowrap"><div class="sub" id="sub"></div></div></header>
   <main id="app"></main>
 </div>
 <div id="timer" hidden><span id="tleft">0:00</span><button id="tstop" type="button">Skip</button></div>
@@ -534,7 +533,7 @@ function onTilt(e){
   var g=clamp(e.gamma,-45,45),bt=clamp(e.beta-45,-45,45),st=document.documentElement.style;
   st.setProperty("--hx",(50+g/45*50)+"%");st.setProperty("--hy",(50+bt/45*50)+"%");
   st.setProperty("--ry",(g/45*9).toFixed(2)+"deg");st.setProperty("--rx",(-bt/45*6).toFixed(2)+"deg")}
-function startTilt(){if(tiltOn)return;tiltOn=true;window.addEventListener("deviceorientation",onTilt);try{localStorage.setItem("masslog.tilt","1")}catch(e){}document.getElementById("tiltbtn").hidden=true}
+function startTilt(){if(tiltOn)return;tiltOn=true;window.addEventListener("deviceorientation",onTilt)}
 function askTilt(){
   var D=window.DeviceOrientationEvent;if(!D)return;
   if(typeof D.requestPermission==="function"){D.requestPermission().then(function(r){if(r==="granted")startTilt()}).catch(function(){})}
@@ -545,12 +544,12 @@ if(!reduce){
   window.addEventListener("scroll",function(){if(!raf){raf=true;requestAnimationFrame(shine)}},{passive:true});
   app.addEventListener("pointermove",function(e){if(tiltOn)return;var c=e.target.closest&&e.target.closest(".card");if(!c)return;var r=c.getBoundingClientRect();c.style.setProperty("--hx",clamp((e.clientX-r.left)/r.width*100,0,100)+"%")});
   shine();
-  var D0=window.DeviceOrientationEvent,btn=document.getElementById("tiltbtn");
+  var D0=window.DeviceOrientationEvent;
   if(D0){
+    /* iOS only shows its motion prompt from a user gesture, so the first tap anywhere triggers it */
     if(typeof D0.requestPermission==="function"){
-      btn.hidden=false;btn.addEventListener("click",askTilt);
-      var was=false;try{was=localStorage.getItem("masslog.tilt")==="1"}catch(e){}
-      if(was){btn.textContent="Tilt on tap";document.addEventListener("pointerdown",function once(){document.removeEventListener("pointerdown",once);askTilt()},{once:true})}
+      var asked=false,first=function(){if(asked)return;asked=true;document.removeEventListener("click",first,true);document.removeEventListener("touchend",first,true);askTilt()};
+      document.addEventListener("click",first,true);document.addEventListener("touchend",first,true);
     }else{askTilt()}
   }
 }
