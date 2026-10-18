@@ -243,6 +243,19 @@ var cloud=null,cloudT=null;
 
 var saveT=null;
 function localSave(){saveT=null;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+var BK="masslog.lastbackup",SNZ="masslog.snooze",persisted=null;
+function lsGet(k){try{return +localStorage.getItem(k)||0}catch(e){return 0}}
+function lsSet(k,v){try{localStorage.setItem(k,String(v))}catch(e){}}
+function hasData(){return Object.keys(state.workouts).length>0||Object.keys(state.weights).length>2||Object.keys(state.meas).length>0}
+function needBackup(){
+  if(!hasData())return false;var now=Date.now(),last=lsGet(BK);
+  if(lsGet(SNZ)>now)return false;
+  return last?now-last>7*864e5:true}
+function fmtAgo(t){if(!t)return "never";var d=Math.floor((Date.now()-t)/864e5);return d<1?"today":d===1?"yesterday":d+" days ago"}
+/* ask iOS to treat this app's storage as persistent so it is not cleared under storage pressure */
+function askPersist(){
+  var sm=navigator.storage;if(!sm||!sm.persist){persisted=null;return}
+  (sm.persisted?sm.persisted():Promise.resolve(false)).then(function(p){return p||sm.persist()}).then(function(g){persisted=!!g;if(ui.tab==="plan")render()}).catch(function(){persisted=false})}
 function flushSave(){if(saveT){clearTimeout(saveT);localSave()}}
 window.addEventListener("pagehide",flushSave);document.addEventListener("visibilitychange",function(){if(document.hidden)flushSave()});
 function persist(){
@@ -345,6 +358,8 @@ function viewTrain(){
     h+='<button type="button" class="day'+(d===TODAY?" today":"")+'" data-act="pickday" data-d="'+d+'" aria-current="'+(d===date)+'">'+(dayDone(d)?'<span class="dot"></span>':'')+DAYN[dow(d)]+'<b>'+(k?BASE[k].name:"Rest")+'</b></button>';
   });
   h+='</div>';
+  if(needBackup()){var lb=lsGet(BK);
+    h+='<section class="card alert"><h3>Back up your data</h3><p class="note">'+(lb?"Your last backup was "+fmtAgo(lb)+". ":"You have not made a backup yet. ")+'Save a copy to Files or iCloud Drive so a cleared browser or a lost phone cannot wipe your history.</p><div class="row"><button class="btn small" type="button" data-act="bkfile">Back up now</button><button class="btn ghost small" type="button" data-act="snooze">Remind me later</button></div></section>'}
   var sc=stalledCount();
   if(state.deload){
     h+='<section class="card alert"><h3>Deload week is on</h3><p class="note">Sets are cut by about 40 percent. Use the same weights, stop 3 reps short of failure, and let joints and tendons recover.</p><button class="btn ghost small" type="button" data-act="deload">End deload</button></section>';
@@ -480,8 +495,10 @@ function viewPlan(){
    '<li><b>Six days is a lot for a beginner.</b> If joints ache or lifts stall for two weeks, deload or drop to five days and keep the same food.</li></ul></section>';
   var ts=tiltState();
   h+='<section class="card"><h3>Tilt shine</h3><p class="note">'+(ts==="on"?"Tilt is on. Move your phone and the card sheen and header foil follow it.":ts==="denied"?"Motion access was denied. To retry, clear this site\'s data in Settings > Safari > Advanced > Website Data, then reopen the page and tap Allow.":ts==="none"?"This device has no motion sensor, so the sheen follows scrolling and touch instead.":"Turn on motion access so the sheen and header foil follow your phone.")+'</p>'+(ts==="ask"?'<button class="btn small" type="button" data-act="tilt">Turn on tilt</button>':'')+'</section>';
-  h+='<section class="card"><h3>Backup</h3><p class="note">Your data is saved on this device and, when your account allows, in your own private store. To keep a copy, copy the text below somewhere safe. To restore, paste it and press Restore.</p>'+
-   '<textarea id="bk" rows="3" aria-label="Backup text"></textarea><div class="row"><button class="btn ghost small" type="button" data-act="bkcopy">Copy backup</button><button class="btn ghost small" type="button" data-act="bkrestore">Restore</button></div><p class="note" id="bkmsg"></p></section>';
+  h+='<section class="card"><h3>Backup and storage</h3><p class="note">Your data lives only on this device. '+(persisted===true?'<span class="ok">iOS has marked this app\'s storage as persistent, so it will not be cleared when space runs low.</span>':persisted===false?'<span class="bad">iOS has not guaranteed this storage, so it could be cleared if the phone runs low on space. Back up regularly.</span>':'Checking whether iOS will keep it...')+' Last backup: <b>'+fmtAgo(lsGet(BK))+'</b>.</p>'+
+   '<div class="row"><button class="btn small" type="button" data-act="bkfile">Back up to Files</button><button class="btn ghost small" type="button" data-act="bkpick">Restore from file</button></div>'+
+   '<input type="file" id="bkfile" accept=".json,application/json" hidden>'+
+   '<details><summary>Back up as text instead</summary><p class="note">Copy the text somewhere safe. To restore, paste it and press Restore.</p><textarea id="bk" rows="3" aria-label="Backup text"></textarea><div class="row"><button class="btn ghost small" type="button" data-act="bkcopy">Copy backup</button><button class="btn ghost small" type="button" data-act="bkrestore">Restore</button></div></details><p class="note" id="bkmsg"></p></section>';
   return h;
 }
 
@@ -568,6 +585,9 @@ app.addEventListener("click",function(e){
     var n2=function(id,def){var v2=num(document.getElementById(id).value);return v2>0?v2:def};
     S.kcal=n2("s_kcal",S.kcal);S.p=n2("s_p",S.p);S.c=n2("s_c",S.c);S.f=n2("s_f",S.f);S.rest=n2("s_rest",S.rest);S.lo=n2("s_lo",S.lo);S.hi=Math.max(S.hi,S.lo+2);persist();render()}
   else if(a==="tilt"){askTilt()}
+  else if(a==="bkfile"){backupFile()}
+  else if(a==="bkpick"){var fi=document.getElementById("bkfile");if(fi)fi.click()}
+  else if(a==="snooze"){lsSet(SNZ,Date.now()+2*864e5);render()}
   else if(a==="bkcopy"){
     var ta=document.getElementById("bk"),msg=document.getElementById("bkmsg");ta.value=JSON.stringify(state);ta.select();
     var fin=function(ok){msg.textContent=ok?"Copied. Paste it into Notes or a message to yourself.":"Select the text above and copy it manually."};
@@ -576,6 +596,29 @@ app.addEventListener("click",function(e){
     var msg2=document.getElementById("bkmsg");
     try{var obj=JSON.parse(document.getElementById("bk").value);if(!obj||!obj.settings)throw 0;state=normalize(obj);persist();render()}catch(err){msg2.textContent="That text is not a valid backup."}}
 });
+
+function backupFile(){
+  flushSave();
+  var name="mog-log-backup-"+TODAY+".json",blob=new Blob([JSON.stringify(state)],{type:"application/json"}),file=null;
+  try{file=new File([blob],name,{type:"application/json"})}catch(e){}
+  var done=function(){lsSet(BK,Date.now());lsSet(SNZ,0);render()};
+  if(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:"Mog Log backup"}).then(done).catch(function(){});return}
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);done()}
+app.addEventListener("change",function(e){
+  var el=e.target;if(!el||el.id!=="bkfile"||!el.files||!el.files[0])return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    var msg=document.getElementById("bkmsg");
+    try{
+      var obj=JSON.parse(rd.result);if(!obj||!obj.settings||typeof obj.settings!=="object")throw 0;
+      var nw=Object.keys(obj.workouts||{}).length,nc=Object.keys(state.workouts).length;
+      if(!confirm("Replace the data on this device ("+nc+" training days) with this backup ("+nw+" training days)?"))return;
+      state=normalize(obj);persist();flushSave();render();
+      var m2=document.getElementById("bkmsg");if(m2)m2.textContent="Restored "+nw+" training days from the backup."}
+    catch(err){if(msg)msg.textContent="That file is not a valid Mog Log backup."}};
+  rd.readAsText(el.files[0]);el.value=""});
 
 /* holographic shine: follows scroll, finger drag and, once enabled, phone tilt */
 var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -611,6 +654,7 @@ if(!reduce){
 }
 render();
 initCloud();
+askPersist();document.addEventListener("click",askPersist,{once:true});
 })();
 </script>
 </body></html>
